@@ -63,6 +63,7 @@ const startA = 65
 const startB = 8921
 You may write your program in any language.
 """
+import time
 
 
 def main():
@@ -73,12 +74,13 @@ def main():
     start_b = 8921
     factor_b = 48271
 
-    a = generate(start_a, factor_a, sequence_length=5)
-    b = generate(start_b, factor_b, sequence_length=5)
-    print a
-    print b
+    SEQUENCE_LENGTH = 5
+
+    a = generate(start_a, factor_a, sequence_length=SEQUENCE_LENGTH)
+    b = generate(start_b, factor_b, sequence_length=SEQUENCE_LENGTH)
+
     match_count = get_match_count(a, b)
-    print '%s matches found' % str(match_count if match_count else 'No')
+    print '%s matches found' % str(match_count if match_count else 0)
 
 
 def generate(start_val, factor, sequence_length=5):
@@ -105,12 +107,17 @@ def generator(start_val, factor):
     2147483647.
     That final remainder is the value it produces next.
     """
-    value = start_val * factor
-    return value % 2147483647
+    return (start_val * factor) % 2147483647
 
 
 def get_match_count(list_a, list_b):
-    """Brute force check to find matches between list_a and list_b."""
+    """Brute force check to find matches between list_a and list_b.
+    Your task is to count the number of pairs that "match" among the
+
+    first 40 million pairs.
+    A pair is said to match if the least significant 16 bits of both
+    values match.
+    """
     match_count = 0
     for number_a in list_a:
         for number_b in list_b:
@@ -119,13 +126,19 @@ def get_match_count(list_a, list_b):
     return match_count
 
 
-def is_match(number_a, number_b):
+def is_match(int_a, int_b):
     """Criteria for a match.
 
-    validate that last digits are equal.
+    Considered a match if last 16 bits of information are equal
+
+    1. Convert to binary
+    2. Check if least significant 16 bits are equal.
     """
-    # Check last digit of number.
-    if number_a % 10 == number_b % 10:
+    sig_figs = 5
+    a_sig_figs = bin(int_a)[-sig_figs:]
+    b_sig_figs = bin(int_b)[-sig_figs:]
+
+    if a_sig_figs == b_sig_figs:
         return True
     return False
 
