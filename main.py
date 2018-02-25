@@ -74,13 +74,24 @@ def main():
     start_b = 8921
     factor_b = 48271
 
-    SEQUENCE_LENGTH = 5
+    # Needs to scale to 40,000,000
+    # Current speed.
+    # 5000 in 11.4 seconds
+    # 50,000: Too big.
+    sequence_length = 40000000
 
-    a = generate(start_a, factor_a, sequence_length=SEQUENCE_LENGTH)
-    b = generate(start_b, factor_b, sequence_length=SEQUENCE_LENGTH)
+    list_a = generate(start_a, factor_a, sequence_length=sequence_length)
+    list_b = generate(start_b, factor_b, sequence_length=sequence_length)
 
-    match_count = get_match_count(a, b)
+    # Run match_count algorithm and return value.
+    t0 = time.time()
+    match_count = get_match_count(list_a, list_b)
+    t1 = time.time()
+    total_time = t1 - t0
+
+    print '%d sequence length' % sequence_length
     print '%s matches found' % str(match_count if match_count else 0)
+    print '%s seconds' % str(total_time)
 
 
 def generate(start_val, factor, sequence_length=5):
@@ -111,13 +122,39 @@ def generator(start_val, factor):
 
 
 def get_match_count(list_a, list_b):
-    """Brute force check to find matches between list_a and list_b.
-    Your task is to count the number of pairs that "match" among the
+    """Find matches between list_a and list_b.
 
-    first 40 million pairs.
     A pair is said to match if the least significant 16 bits of both
     values match.
     """
+    binary_dict_a = get_binary_dict(list_a)
+    binary_dict_b = get_binary_dict(list_b)
+
+    match_count = 0
+    for entry in binary_dict_a:
+        if entry in binary_dict_b:
+            # count_a = binary_dict_a[entry]
+            # count_b = binary_dict_b[entry]
+            match_count += 1
+    return match_count
+
+
+def get_binary_dict(sequence):
+    """Return a dict with count of times a number is found in the sequence."""
+    binary_dict = {}
+    for integer in sequence:
+        # Convert to binary, save last 16 digits.
+        binary = bin(integer)[-16:]
+        # Add to dict, and increment.
+        if binary not in binary_dict:
+            binary_dict[binary] = 1
+        else:
+            binary_dict[binary] += 1
+    return binary_dict
+
+
+def get_match_count_brute_force(list_a, list_b):
+    """Brute force check to find matches between list_a and list_b."""
     match_count = 0
     for number_a in list_a:
         for number_b in list_b:
@@ -127,14 +164,8 @@ def get_match_count(list_a, list_b):
 
 
 def is_match(int_a, int_b):
-    """Criteria for a match.
-
-    Considered a match if last 16 bits of information are equal
-
-    1. Convert to binary
-    2. Check if least significant 16 bits are equal.
-    """
-    sig_figs = 5
+    """A pair is said to match if least significant 16 bits match."""
+    sig_figs = 16
     a_sig_figs = bin(int_a)[-sig_figs:]
     b_sig_figs = bin(int_b)[-sig_figs:]
 
