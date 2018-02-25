@@ -11,6 +11,6 @@ python match_counter.py
 ```
 
 # Performance Metrics
-Both sequences are generated in about 35 seconds
-Matches counted in 5 seconds
-Only run on my local machine, so YMMV.
+<br>Both sequences are generated in about 35 seconds
+<br>Matches counted in 5 seconds
+<br>Only run on my local machine, so YMMV.
