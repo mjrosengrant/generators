@@ -74,10 +74,7 @@ def main():
     start_b = 8921
     factor_b = 48271
 
-    # Needs to scale to 40,000,000
-    # Current speed.
-    # 5000 in 11.4 seconds
-    # 50,000: Too big.
+    # 40,000,000 sequence length currently takes 19.8 seconds to run
     sequence_length = 40000000
 
     list_a = generate(start_a, factor_a, sequence_length=sequence_length)
@@ -127,50 +124,17 @@ def get_match_count(list_a, list_b):
     A pair is said to match if the least significant 16 bits of both
     values match.
     """
-    binary_dict_a = get_binary_dict(list_a)
-    binary_dict_b = get_binary_dict(list_b)
-
     match_count = 0
-    for entry in binary_dict_a:
-        if entry in binary_dict_b:
-            # count_a = binary_dict_a[entry]
-            # count_b = binary_dict_b[entry]
+    for i in range(len(list_a)):
+        value_a = get_binary_value(list_a[i])
+        value_b = get_binary_value(list_b[i])
+        if value_a == value_b:
             match_count += 1
     return match_count
 
 
-def get_binary_dict(sequence):
-    """Return a dict with count of times a number is found in the sequence."""
-    binary_dict = {}
-    for integer in sequence:
-        # Convert to binary, save last 16 digits.
-        binary = bin(integer)[-16:]
-        # Add to dict, and increment.
-        if binary not in binary_dict:
-            binary_dict[binary] = 1
-        else:
-            binary_dict[binary] += 1
-    return binary_dict
-
-
-def get_match_count_brute_force(list_a, list_b):
-    """Brute force check to find matches between list_a and list_b."""
-    match_count = 0
-    for number_a in list_a:
-        for number_b in list_b:
-            if is_match(number_a, number_b):
-                match_count = match_count + 1
-    return match_count
-
-
-def is_match(int_a, int_b):
-    """A pair is said to match if least significant 16 bits match."""
-    sig_figs = 16
-    a_sig_figs = bin(int_a)[-sig_figs:]
-    b_sig_figs = bin(int_b)[-sig_figs:]
-
-    if a_sig_figs == b_sig_figs:
-        return True
-    return False
+def get_binary_value(integer):
+    """Accept an integer and returns least significant 16 binary digits."""
+    return bin(integer)[-16:]
 
 main()
