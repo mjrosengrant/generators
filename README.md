@@ -9,3 +9,8 @@ Written for Python 2.7.12
 pip install -r requirements.txt
 python match_counter.py
 ```
+
+# Performance Metrics
+Both sequences are generated in about 35 seconds
+Matches counted in 5 seconds
+Only run on my local machine, so YMMV.
