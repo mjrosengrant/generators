@@ -15,23 +15,42 @@ def main(argv):
     start_b = 8921
     factor_b = 48271
 
+    # For simplicity, ensure subset_size can divide the sequence_length evenly
     sequence_length = 40000000
+    subset_size = 1000000
 
-    print 'Generating sequences'
-    t0 = time.time()
-    list_a = generate_sequence(start_a, factor_a, sequence_length=sequence_length)
-    list_b = generate_sequence(start_b, factor_b, sequence_length=sequence_length)
-    t1 = time.time()
-    generation_time = t1 - t0
+    total_matches = 0
+    generation_time = 0
+    match_algorithm_time = 0
 
-    print 'Counting matches.'
-    t0 = time.time()
-    match_count = get_match_count(list_a, list_b)
-    t1 = time.time()
-    match_algorithm_time = t1 - t0
+    most_recent_a = start_a
+    most_recent_b = start_b
+    # Perform calculation in multiple iterations of subset_size, so that full sequence
+    # does not need to be stored in memory at the same time.
+    for i in range(sequence_length / subset_size):
+        generation_t0 = time.time()
+        a_sequence = generate_sequence(most_recent_a, factor_a, subset_size)
+        b_sequence = generate_sequence(most_recent_b, factor_b, subset_size)
+        # Save the last value of each sequence to use as start_val in the next iteration.
+        most_recent_a = a_sequence[-1]
+        most_recent_b = b_sequence[-1]
+        # Now that we have the most recent values, convert sequences to binary.
+        a_sequence = convert_to_binary(a_sequence)
+        b_sequence = convert_to_binary(b_sequence)
+        generation_t1 = time.time()
+
+        # Calculate matches in subset, and add to total_matchs.
+        counting_t0 = time.time()
+        new_matches = get_match_count(a_sequence, b_sequence)
+        total_matches += new_matches
+        counting_t1 = time.time()
+
+        # Update accumulated time spent on each step
+        generation_time += generation_t1 - generation_t0
+        match_algorithm_time += counting_t1 - counting_t0
 
     print '%d sequence length' % sequence_length
-    print '%s matches found' % str(match_count if match_count else 0)
+    print '%s matches found' % str(total_matches if total_matches else 0)
     print 'Sequences generated in %s seconds' % str(generation_time)
     print 'Matches found in %s seconds' % str(match_algorithm_time)
 
@@ -42,8 +61,7 @@ def generate_sequence(start_val, factor, sequence_length=5):
     value = start_val
     for i in range(sequence_length):
         value = generator(value, factor)
-        binary_value = get_binary_value(value)
-        generated_list.append(binary_value)
+        generated_list.append(value)
     return generated_list
 
 
@@ -55,6 +73,13 @@ def generator(start_val, factor):
     remainder of dividing that resulting product by 2147483647.
     """
     return (start_val * factor) % 2147483647
+
+
+def convert_to_binary(integer_array):
+    """Convert integer to the binary value we are looking for."""
+    for i in range(len(integer_array)):
+        integer_array[i] = get_binary_value(integer_array[i])
+    return integer_array
 
 
 def get_match_count(list_a, list_b):
